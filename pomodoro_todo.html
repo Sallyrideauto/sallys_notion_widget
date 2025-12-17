@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <style>
-  /* 1. CSS 변수 및 다크모드 설정 (이전과 동일) */
+  /* --- 1. CSS 변수 및 다크모드 설정 --- */
   :root {
     --text-main: #37352f;
     --text-sub: #787774;
@@ -11,6 +11,8 @@
     --border-color: rgba(55, 53, 47, 0.16);
     --hover-bg: rgba(55, 53, 47, 0.08);
     --accent-color: #e16259;
+    --danger-color: #eb5757; /* 삭제 버튼 색상 */
+    --progress-color: #2e8b57; /* 진행률 텍스트 색상 */
   }
 
   @media (prefers-color-scheme: dark) {
@@ -20,6 +22,7 @@
       --bg-input: rgba(255, 255, 255, 0.1);
       --border-color: rgba(255, 255, 255, 0.13);
       --hover-bg: rgba(255, 255, 255, 0.08);
+      --progress-color: #6fcf97;
     }
   }
 
@@ -61,17 +64,31 @@
   .task-item:hover { background: var(--hover-bg); border-color: var(--border-color); }
 
   .task-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
-  .task-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; }
+  .task-left { display: flex; align-items: center; gap: 8px; flex-grow: 1; }
+  .task-title { font-size: 15px; font-weight: 500; }
+  
+  /* 퍼센트 표시 스타일 */
+  .progress-percent {
+    font-size: 12px; color: var(--progress-color); font-weight: 600; margin-left: 5px;
+  }
+
+  .task-controls { display: flex; align-items: center; gap: 8px; }
   .details-btn { font-size: 12px; color: var(--text-sub); background: none; border: none; cursor: pointer; }
   
-  /* 하위 태스크 영역 스타일 */
+  /* 삭제 버튼 스타일 */
+  .delete-btn {
+    color: var(--text-sub); background: none; border: none; cursor: pointer;
+    font-size: 16px; line-height: 1; padding: 0 4px; opacity: 0.5;
+  }
+  .delete-btn:hover { color: var(--danger-color); opacity: 1; }
+
+  /* 하위 태스크 영역 */
   .sub-tasks-container {
     display: none; margin-top: 10px; padding-left: 28px;
     border-left: 2px solid var(--border-color); margin-left: 4px;
   }
   .show { display: block; }
 
-  /* 하위 태스크 입력창 */
   .sub-input {
     width: 100%; padding: 6px; background: transparent;
     border: none; border-bottom: 1px dashed var(--border-color);
@@ -80,15 +97,15 @@
   }
   .sub-input::placeholder { font-style: italic; opacity: 0.7; }
 
-  /* 하위 태스크 리스트 */
   .sub-task-list { list-style: none; padding: 0; }
   .sub-task-item {
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; justify-content: space-between;
     font-size: 13px; color: var(--text-sub);
     padding: 3px 0; cursor: pointer; user-select: none;
   }
   .sub-task-item:hover { color: var(--text-main); }
-  
+  .sub-task-left { display: flex; align-items: center; gap: 6px; }
+
   /* 완료 상태 스타일 */
   .done { text-decoration: line-through; opacity: 0.6; }
   .icon-check { min-width: 18px; text-align: center; }
@@ -110,35 +127,21 @@
 <script>
   // --- 타이머 로직 (변경 없음) ---
   let timeLeft = 1500; let interval; let isRunning = false;
-  
   function updateDisplay() {
     const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
     const s = (timeLeft % 60).toString().padStart(2, '0');
     document.getElementById('timer').innerText = `${m}:${s}`;
     document.title = `${m}:${s} - Pomodoro`;
   }
-  
   function startTimer() {
-    if(isRunning) {
-      clearInterval(interval); isRunning = false;
-      document.querySelector('.start').innerText = 'Resume';
-      return;
-    }
-    isRunning = true;
-    document.querySelector('.start').innerText = 'Pause';
+    if(isRunning) { clearInterval(interval); isRunning = false; document.querySelector('.start').innerText = 'Resume'; return; }
+    isRunning = true; document.querySelector('.start').innerText = 'Pause';
     interval = setInterval(() => {
       timeLeft--; updateDisplay();
-      if(timeLeft === 0) { 
-        clearInterval(interval); isRunning = false; 
-        alert('집중 시간 종료!'); resetTimer(); 
-      }
+      if(timeLeft === 0) { clearInterval(interval); isRunning = false; alert('집중 시간 종료!'); resetTimer(); }
     }, 1000);
   }
-  
-  function resetTimer() { 
-    clearInterval(interval); isRunning = false; timeLeft = 1500; 
-    updateDisplay(); document.querySelector('.start').innerText = 'Start';
-  }
+  function resetTimer() { clearInterval(interval); isRunning = false; timeLeft = 1500; updateDisplay(); document.querySelector('.start').innerText = 'Start'; }
 
   // --- 메인 투두 리스트 로직 ---
   document.getElementById('mainTaskInput').addEventListener('keypress', function (e) {
@@ -148,15 +151,18 @@
       
       const li = document.createElement('li');
       li.className = 'task-item';
-      // 고유 ID 생성 (하위 태스크 연결용)
-      const uniqueId = 'task-' + Date.now();
       
       li.innerHTML = `
         <div class="task-header">
-          <span class="task-title" onclick="toggleMainDone(this)">
-            <span class="icon-check">⬜</span> <span>${text}</span>
-          </span>
-          <button class="details-btn" onclick="toggleDetails(this)">Details ▼</button>
+          <div class="task-left" onclick="toggleMainDone(this)">
+            <span class="icon-check">⬜</span> 
+            <span class="task-title">${text}</span>
+            <span class="progress-percent"></span>
+          </div>
+          <div class="task-controls">
+            <button class="details-btn" onclick="toggleDetails(this)">Details ▼</button>
+            <button class="delete-btn" onclick="deleteTask(this)">×</button>
+          </div>
         </div>
         <div class="sub-tasks-container">
           <input type="text" class="sub-input" placeholder="↳ 하위 할 일 입력 후 Enter..." onkeypress="addSubTask(event, this)">
@@ -169,28 +175,30 @@
   });
 
   // 메인 태스크 완료 토글
-  function toggleMainDone(span) {
-    const textSpan = span.querySelector('span:last-child');
-    const iconSpan = span.querySelector('span:first-child');
-    
+  function toggleMainDone(div) {
+    const textSpan = div.querySelector('.task-title');
+    const iconSpan = div.querySelector('.icon-check');
     if (textSpan.classList.contains('done')) {
-      textSpan.classList.remove('done');
-      iconSpan.innerText = '⬜';
+      textSpan.classList.remove('done'); iconSpan.innerText = '⬜';
     } else {
-      textSpan.classList.add('done');
-      iconSpan.innerText = '✅';
+      textSpan.classList.add('done'); iconSpan.innerText = '✅';
+    }
+  }
+
+  // 메인 태스크 삭제
+  function deleteTask(btn) {
+    if(confirm('이 작업을 삭제하시겠습니까?')) {
+      const li = btn.closest('.task-item');
+      li.remove();
     }
   }
 
   // 세부사항 펼치기/접기
   function toggleDetails(btn) {
-    const subContainer = btn.parentElement.nextElementSibling;
+    const subContainer = btn.closest('.task-header').nextElementSibling;
     subContainer.classList.toggle('show');
     btn.innerText = subContainer.classList.contains('show') ? 'Close ▲' : 'Details ▼';
-    // 펼쳐질 때 하위 입력창에 포커스
-    if(subContainer.classList.contains('show')) {
-        subContainer.querySelector('.sub-input').focus();
-    }
+    if(subContainer.classList.contains('show')) subContainer.querySelector('.sub-input').focus();
   }
 
   // --- 하위 태스크 추가 및 관리 로직 ---
@@ -199,28 +207,64 @@
       const text = input.value;
       if (!text) return;
 
-      const ul = input.nextElementSibling; // 바로 뒤에 있는 ul 태그 찾기
+      const ul = input.nextElementSibling;
       const li = document.createElement('li');
       li.className = 'sub-task-item';
-      li.onclick = function() { toggleSubDone(this); }; // 클릭 이벤트 연결
-      li.innerHTML = `<span class="icon-check">◽</span> <span class="sub-text">${text}</span>`;
+      
+      li.innerHTML = `
+        <div class="sub-task-left" onclick="toggleSubDone(this)">
+          <span class="icon-check">◽</span> 
+          <span class="sub-text">${text}</span>
+        </div>
+        <button class="delete-btn" onclick="deleteSubTask(this)">×</button>
+      `;
       
       ul.appendChild(li);
-      input.value = ''; // 입력창 초기화
+      input.value = '';
+      
+      // 퍼센트 업데이트
+      updateProgress(ul.closest('.task-item'));
     }
   }
 
   // 하위 태스크 완료 토글
-  function toggleSubDone(li) {
-    const textSpan = li.querySelector('.sub-text');
-    const iconSpan = li.querySelector('.icon-check');
+  function toggleSubDone(div) {
+    const textSpan = div.querySelector('.sub-text');
+    const iconSpan = div.querySelector('.icon-check');
 
     if (textSpan.classList.contains('done')) {
-      textSpan.classList.remove('done');
-      iconSpan.innerText = '◽';
+      textSpan.classList.remove('done'); iconSpan.innerText = '◽';
     } else {
-      textSpan.classList.add('done');
-      iconSpan.innerText = '✔';
+      textSpan.classList.add('done'); iconSpan.innerText = '✔';
+    }
+    // 상태 변경 시 퍼센트 업데이트
+    updateProgress(div.closest('.task-item'));
+  }
+
+  // 하위 태스크 삭제
+  function deleteSubTask(btn) {
+    const li = btn.closest('.sub-task-item');
+    const mainTaskItem = li.closest('.task-item');
+    li.remove();
+    // 삭제 후 퍼센트 업데이트
+    updateProgress(mainTaskItem);
+  }
+
+  // --- 퍼센트 계산 로직 ---
+  function updateProgress(taskItem) {
+    const subList = taskItem.querySelector('.sub-task-list');
+    const totalSub = subList.querySelectorAll('.sub-task-item').length;
+    const doneSub = subList.querySelectorAll('.sub-text.done').length;
+    const percentSpan = taskItem.querySelector('.progress-percent');
+
+    if (totalSub === 0) {
+      percentSpan.innerText = ''; // 하위 태스크 없으면 표시 안 함
+    } else {
+      const percent = Math.round((doneSub / totalSub) * 100);
+      percentSpan.innerText = `(${percent}%)`;
+      
+      // 100% 달성 시 색상 강조 (선택 사항)
+      if(percent === 100) percentSpan.style.color = '#2e8b57'; // Green
     }
   }
 </script>
