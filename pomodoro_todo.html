@@ -3,17 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <style>
-  /* --- CSS 변수 및 다크모드 설정 --- */
+  /* --- 1. CSS 변수 및 색상 설정 --- */
   :root {
     --text-main: #37352f;
     --text-sub: #787774;
+    --bg-body: transparent;
     --bg-input: rgba(255, 255, 255, 0.6);
     --border-color: rgba(55, 53, 47, 0.16);
     --hover-bg: rgba(55, 53, 47, 0.08);
-    --accent-color: #e16259;
+    
+    /* 카테고리별 색상 */
+    --c-work: #69A2B0;
+    --c-study: #659157;
+    --c-social: #E05263;
+    --c-mind: #FFCAB1;
+    
     --danger-color: #eb5757;
-    --progress-color: #2e8b57;
-    --bar-bg: rgba(55, 53, 47, 0.08);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -23,371 +28,395 @@
       --bg-input: rgba(255, 255, 255, 0.1);
       --border-color: rgba(255, 255, 255, 0.13);
       --hover-bg: rgba(255, 255, 255, 0.08);
-      --progress-color: #6fcf97;
-      --bar-bg: rgba(255, 255, 255, 0.1);
     }
   }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     padding: 20px;
-    background-color: transparent;
     color: var(--text-main);
+    background: var(--bg-body);
     margin: 0;
   }
 
-  /* 타이머 스타일 */
-  .timer-box { text-align: center; margin-bottom: 20px; }
-  .time { font-size: 56px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -2px; margin-bottom: 10px; }
-  
-  .btn-group { display: flex; justify-content: center; gap: 10px; }
+  /* --- 타이머 --- */
+  .timer-box { text-align: center; margin-bottom: 25px; }
+  .time { font-size: 50px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -2px; margin-bottom: 10px; }
   .btn {
-    padding: 6px 16px; border: 1px solid var(--border-color); border-radius: 6px;
+    padding: 5px 14px; border: 1px solid var(--border-color); border-radius: 6px;
     background: var(--bg-input); color: var(--text-main); cursor: pointer;
-    font-size: 14px; transition: background 0.2s;
+    font-size: 13px; transition: 0.2s;
   }
   .btn:hover { background: var(--hover-bg); }
-  .btn.start { border-color: var(--accent-color); color: var(--accent-color); font-weight: 600; }
 
-  /* 총 달성률 바 스타일 */
-  .daily-progress-container { margin-bottom: 20px; }
-  .daily-label { font-size: 12px; color: var(--text-sub); display: flex; justify-content: space-between; margin-bottom: 5px; }
-  .progress-bar-bg {
-    width: 100%; height: 8px; background: var(--bar-bg); border-radius: 4px; overflow: hidden;
-  }
+  /* --- 전체 진행률 --- */
+  .daily-progress-container { margin-bottom: 25px; }
+  .daily-label { font-size: 12px; color: var(--text-sub); display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .progress-bar-bg { width: 100%; height: 6px; background: rgba(55,53,47, 0.1); border-radius: 3px; overflow: hidden; }
   .progress-bar-fill {
-    height: 100%; width: 0%; background: var(--accent-color); border-radius: 4px;
-    transition: width 0.4s ease;
+    height: 100%; width: 0%; background: #333; border-radius: 3px; transition: width 0.4s ease;
   }
+  /* 다크모드 바 배경 */
+  @media (prefers-color-scheme: dark) { .progress-bar-bg { background: rgba(255,255,255, 0.15); } .progress-bar-fill { background: #eee; } }
 
-  /* 리스트 스타일 */
+  /* --- 카테고리 선택 및 입력 --- */
+  .category-selector { display: flex; gap: 8px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 2px; }
+  .cat-btn {
+    border: 1px solid transparent; background: transparent; 
+    padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: 600;
+    cursor: pointer; opacity: 0.6; transition: 0.2s; display: flex; align-items: center; gap: 4px;
+    color: var(--text-sub); border-color: var(--border-color);
+  }
+  .cat-btn:hover { opacity: 1; }
+  
+  /* 선택된 버튼 스타일 */
+  .cat-btn.active { opacity: 1; background: var(--bg-input); border-color: currentColor; }
+  .cat-btn.active.work { color: var(--c-work); }
+  .cat-btn.active.study { color: var(--c-study); }
+  .cat-btn.active.social { color: var(--c-social); }
+  .cat-btn.active.mind { color: var(--c-mind); }
+
   .task-input {
     width: 100%; padding: 10px; border: 1px solid var(--border-color);
     background: var(--bg-input); color: var(--text-main);
     border-radius: 6px; box-sizing: border-box; outline: none; font-size: 14px;
+    margin-bottom: 20px; transition: border-color 0.3s;
   }
-  .task-list { list-style: none; padding: 0; margin-top: 15px; }
-  .task-item {
-    margin-bottom: 8px; padding: 8px; border-radius: 6px;
-    transition: background 0.2s; border: 1px solid transparent;
-  }
-  .task-item:hover { background: var(--hover-bg); border-color: var(--border-color); }
+  .task-input:focus { border-color: var(--text-sub); }
 
-  .task-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
-  .task-left { display: flex; align-items: center; gap: 8px; flex-grow: 1; }
-  .task-title { font-size: 15px; font-weight: 500; }
+  /* --- 리스트 섹션 --- */
+  .section-container { margin-bottom: 20px; display: none; /* 내용 없으면 숨김 */ }
+  .section-container.has-items { display: block; }
   
-  .sub-percent { font-size: 12px; color: var(--progress-color); font-weight: 600; margin-left: 5px; }
-
-  .task-controls { display: flex; align-items: center; gap: 8px; }
-  .details-btn { font-size: 12px; color: var(--text-sub); background: none; border: none; cursor: pointer; }
-  .delete-btn { color: var(--text-sub); background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; }
-  .delete-btn:hover { color: var(--danger-color); opacity: 1; }
-
-  .sub-tasks-container {
-    display: none; margin-top: 10px; padding-left: 28px;
-    border-left: 2px solid var(--border-color); margin-left: 4px;
+  .section-header {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+    margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid; display: flex; align-items: center;
   }
-  .show { display: block; }
+  
+  /* 섹션별 색상 적용 */
+  .sec-work { color: var(--c-work); border-color: var(--c-work); }
+  .sec-study { color: var(--c-study); border-color: var(--c-study); }
+  .sec-social { color: var(--c-social); border-color: var(--c-social); }
+  .sec-mind { color: var(--c-mind); border-color: var(--c-mind); }
 
+  .task-list { list-style: none; padding: 0; margin: 0; }
+
+  /* --- 태스크 아이템 --- */
+  .task-item {
+    margin-bottom: 8px; padding: 8px 10px; border-radius: 6px;
+    background: var(--bg-input);
+    border-left: 4px solid transparent; /* 카테고리 색상 바 */
+    transition: 0.2s; position: relative;
+  }
+  .task-item:hover { background: var(--hover-bg); }
+
+  /* 아이템별 테두리 색상 */
+  .task-item[data-cat="work"] { border-left-color: var(--c-work); }
+  .task-item[data-cat="study"] { border-left-color: var(--c-study); }
+  .task-item[data-cat="social"] { border-left-color: var(--c-social); }
+  .task-item[data-cat="mind"] { border-left-color: var(--c-mind); }
+
+  .task-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .task-left { display: flex; align-items: center; gap: 8px; flex-grow: 1; }
+  
+  /* 체크박스 커스텀 */
+  .custom-check { width: 16px; height: 16px; border: 1.5px solid currentColor; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .done .custom-check { background: currentColor; color: white; }
+  .task-item[data-cat="work"] .custom-check { color: var(--c-work); }
+  .task-item[data-cat="study"] .custom-check { color: var(--c-study); }
+  .task-item[data-cat="social"] .custom-check { color: var(--c-social); }
+  .task-item[data-cat="mind"] .custom-check { color: var(--c-mind); }
+
+  .task-title { font-size: 14px; font-weight: 500; }
+  .sub-percent { font-size: 11px; opacity: 0.8; font-weight: 600; margin-left: 6px; }
+  .task-controls button { background: none; border: none; cursor: pointer; color: var(--text-sub); opacity: 0.6; padding: 2px 5px; }
+  .task-controls button:hover { opacity: 1; color: var(--text-main); }
+  .delete-btn:hover { color: var(--danger-color) !important; }
+
+  /* 하위 태스크 */
+  .sub-tasks-container { display: none; margin-top: 8px; padding-left: 28px; }
+  .sub-tasks-container.show { display: block; }
   .sub-input {
-    width: 100%; padding: 6px; background: transparent;
-    border: none; border-bottom: 1px dashed var(--border-color);
-    color: var(--text-sub); font-size: 13px; outline: none; margin-bottom: 8px;
+    width: 100%; border: none; border-bottom: 1px dashed var(--border-color);
+    background: transparent; color: var(--text-sub); font-size: 13px; outline: none; padding: 4px 0;
   }
-  .sub-task-list { list-style: none; padding: 0; }
-  .sub-task-item {
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: 13px; color: var(--text-sub); padding: 3px 0; cursor: pointer; user-select: none;
-  }
-  .sub-task-left { display: flex; align-items: center; gap: 6px; }
-
-  .done { text-decoration: line-through; opacity: 0.6; }
-  .icon-check { min-width: 18px; text-align: center; }
+  .sub-task-item { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--text-sub); padding: 3px 0; }
+  .sub-check { cursor: pointer; margin-right: 6px; }
+  .sub-text.done { text-decoration: line-through; opacity: 0.6; }
+  
+  .done-title { text-decoration: line-through; opacity: 0.6; color: var(--text-sub); }
 </style>
 </head>
 <body>
 
 <div class="timer-box">
   <div class="time" id="timer">25:00</div>
-  <div class="btn-group">
-    <button class="btn start" onclick="startTimer()">Start</button>
+  <div>
+    <button class="btn" onclick="startTimer()" id="timerBtn">Start</button>
     <button class="btn" onclick="resetTimer()">Reset</button>
   </div>
 </div>
 
 <div class="daily-progress-container">
   <div class="daily-label">
-    <span>오늘의 달성률</span>
-    <span id="dailyPercent">0%</span>
+    <span>Today's Progress</span> <span id="dailyPercent">0%</span>
   </div>
   <div class="progress-bar-bg">
     <div class="progress-bar-fill" id="dailyBar"></div>
   </div>
 </div>
 
-<input type="text" class="task-input" id="mainTaskInput" placeholder="+ 오늘 할 일 추가 (Enter)">
-<ul class="task-list" id="taskList"></ul>
+<div class="category-selector">
+  <button class="cat-btn active work" onclick="selectCategory('work')">● Work</button>
+  <button class="cat-btn study" onclick="selectCategory('study')">● Study</button>
+  <button class="cat-btn social" onclick="selectCategory('social')">● Social</button>
+  <button class="cat-btn mind" onclick="selectCategory('mind')">● Mind</button>
+</div>
+<input type="text" class="task-input" id="mainTaskInput" placeholder="Add to Work..." onkeypress="handleInput(event)">
+
+<div id="listContainer">
+  <div class="section-container" id="sec-work">
+    <div class="section-header sec-work">Work</div>
+    <ul class="task-list" id="list-work"></ul>
+  </div>
+  <div class="section-container" id="sec-study">
+    <div class="section-header sec-study">Study</div>
+    <ul class="task-list" id="list-study"></ul>
+  </div>
+  <div class="section-container" id="sec-social">
+    <div class="section-header sec-social">Social</div>
+    <ul class="task-list" id="list-social"></ul>
+  </div>
+  <div class="section-container" id="sec-mind">
+    <div class="section-header sec-mind">Mind</div>
+    <ul class="task-list" id="list-mind"></ul>
+  </div>
+</div>
 
 <script>
-  // --- 1. 저장소 및 날짜 관리 로직 ---
-  const STORAGE_KEY = 'notion_pomodoro_tasks';
-  const DATE_KEY = 'notion_pomodoro_date';
+  // --- 설정 및 상태 관리 ---
+  let currentCategory = 'work';
+  const STORAGE_KEY = 'notion_pomodoro_v2';
+  const DATE_KEY = 'notion_pomodoro_date_v2';
 
-  // 페이지 로드 시 실행
+  // 초기화
   window.onload = function() {
-    checkDateAndLoad();
-  };
-
-  function checkDateAndLoad() {
     const today = new Date().toLocaleDateString();
     const savedDate = localStorage.getItem(DATE_KEY);
 
     if (savedDate !== today) {
-      // 날짜가 다르면(새로운 날) 초기화
       localStorage.setItem(DATE_KEY, today);
       localStorage.removeItem(STORAGE_KEY);
-      renderTasks([]); // 빈 리스트 렌더링
-    } else {
-      // 같은 날이면 데이터 불러오기
-      const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      renderTasks(savedData);
+      saveData([]); // 빈 배열 저장
     }
-    updateDailyProgress();
+    
+    loadTasks();
+  };
+
+  function selectCategory(cat) {
+    currentCategory = cat;
+    // 버튼 스타일 업데이트
+    document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.cat-btn.${cat}`).classList.add('active');
+    
+    // 입력창 플레이스홀더 변경
+    const capital = cat.charAt(0).toUpperCase() + cat.slice(1);
+    document.getElementById('mainTaskInput').placeholder = `Add to ${capital}...`;
+    document.getElementById('mainTaskInput').focus();
   }
 
-  function saveData() {
-    const tasks = [];
-    document.querySelectorAll('.task-item').forEach(item => {
-      const title = item.querySelector('.task-title').innerText;
-      const isDone = item.querySelector('.task-title').classList.contains('done');
-      
-      const subTasks = [];
-      item.querySelectorAll('.sub-task-item').forEach(sub => {
-        subTasks.push({
-          text: sub.querySelector('.sub-text').innerText,
-          done: sub.querySelector('.sub-text').classList.contains('done')
-        });
-      });
-
-      tasks.push({ title, done: isDone, subs: subTasks });
-    });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    updateDailyProgress();
-  }
-
-  // 데이터 기반 렌더링 함수
-  function renderTasks(data) {
-    const list = document.getElementById('taskList');
-    list.innerHTML = '';
-    data.forEach(task => {
-      createTaskElement(task.title, task.done, task.subs);
-    });
-  }
-
-  // --- 2. 타이머 로직 (기존 동일) ---
-  let timeLeft = 1500; let interval; let isRunning = false;
-  function updateDisplay() {
-    const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-    const s = (timeLeft % 60).toString().padStart(2, '0');
-    document.getElementById('timer').innerText = `${m}:${s}`;
-    document.title = `${m}:${s} - Pomodoro`;
-  }
-  function startTimer() {
-    if(isRunning) { clearInterval(interval); isRunning = false; document.querySelector('.start').innerText = 'Resume'; return; }
-    isRunning = true; document.querySelector('.start').innerText = 'Pause';
-    interval = setInterval(() => {
-      timeLeft--; updateDisplay();
-      if(timeLeft === 0) { clearInterval(interval); isRunning = false; alert('집중 시간 종료!'); resetTimer(); }
-    }, 1000);
-  }
-  function resetTimer() { clearInterval(interval); isRunning = false; timeLeft = 1500; updateDisplay(); document.querySelector('.start').innerText = 'Start'; }
-
-  // --- 3. 태스크 관리 로직 ---
-  const taskInput = document.getElementById('mainTaskInput');
-  taskInput.addEventListener('keypress', function (e) {
+  function handleInput(e) {
     if (e.key === 'Enter') {
-      if (!this.value) return;
-      createTaskElement(this.value, false, []);
-      this.value = '';
-      saveData();
+      const text = e.target.value;
+      if(!text) return;
+      addTask(text, currentCategory);
+      e.target.value = '';
     }
-  });
+  }
 
-  function createTaskElement(text, isDone, subTasksData) {
-    const li = document.createElement('li');
-    li.className = 'task-item';
-    
-    li.innerHTML = `
-      <div class="task-header">
-        <div class="task-left" onclick="toggleMainDone(this)">
-          <span class="icon-check">${isDone ? '✅' : '⬜'}</span> 
-          <span class="task-title ${isDone ? 'done' : ''}">${text}</span>
-          <span class="sub-percent"></span>
-        </div>
-        <div class="task-controls">
-          <button class="details-btn" onclick="toggleDetails(this)">Details ▼</button>
-          <button class="delete-btn" onclick="deleteTask(this)">×</button>
-        </div>
-      </div>
-      <div class="sub-tasks-container">
-        <input type="text" class="sub-input" placeholder="↳ 하위 할 일 입력 후 Enter..." onkeypress="addSubTask(event, this)">
-        <ul class="sub-task-list"></ul>
-      </div>
-    `;
-    
-    // 하위 데이터 복원
-    const subList = li.querySelector('.sub-task-list');
-    subTasksData.forEach(sub => {
-      createSubTaskElement(subList, sub.text, sub.done);
+  // --- 데이터 관리 (저장/로드) ---
+  function getTasks() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  }
+
+  function saveData(tasks) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    render(tasks);
+  }
+
+  function addTask(text, category) {
+    const tasks = getTasks();
+    tasks.push({
+      id: Date.now(),
+      text: text,
+      category: category,
+      done: false,
+      subTasks: []
+    });
+    saveData(tasks);
+  }
+
+  function loadTasks() {
+    render(getTasks());
+  }
+
+  // --- 렌더링 (핵심 로직) ---
+  function render(tasks) {
+    // 1. 리스트 초기화
+    ['work', 'study', 'social', 'mind'].forEach(cat => {
+      document.getElementById(`list-${cat}`).innerHTML = '';
+      document.getElementById(`sec-${cat}`).classList.remove('has-items');
     });
 
-    document.getElementById('taskList').appendChild(li);
-    updateSubProgress(li);
+    let totalTasks = 0;
+    let totalDone = 0;
+
+    // 2. 태스크 분류 및 DOM 생성
+    tasks.forEach(task => {
+      totalTasks++;
+      if(task.done) totalDone++;
+
+      const li = document.createElement('li');
+      li.className = 'task-item';
+      li.dataset.cat = task.category;
+      
+      // 하위 태스크 계산
+      const subTotal = task.subTasks.length;
+      const subDone = task.subTasks.filter(s => s.done).length;
+      const percent = subTotal > 0 ? Math.round((subDone / subTotal) * 100) : 0;
+      const percentStr = subTotal > 0 ? `(${percent}%)` : '';
+      const doneClass = task.done ? 'done' : '';
+      const doneTitleClass = task.done ? 'done-title' : '';
+      const checkMark = task.done ? '✔' : '';
+
+      li.innerHTML = `
+        <div class="task-header">
+          <div class="task-left" onclick="toggleTask(${task.id})">
+            <div class="custom-check ${doneClass}">${checkMark}</div>
+            <span class="task-title ${doneTitleClass}" style="margin-left:8px;">${task.text}</span>
+            <span class="sub-percent" style="color:var(--c-${task.category})">${percentStr}</span>
+          </div>
+          <div class="task-controls">
+            <button onclick="toggleDetails(this)">▼</button>
+            <button class="delete-btn" onclick="deleteTask(${task.id})">×</button>
+          </div>
+        </div>
+        <div class="sub-tasks-container">
+          <ul class="sub-task-list">
+            ${task.subTasks.map((sub, idx) => `
+              <li class="sub-task-item">
+                <div style="display:flex; align-items:center" onclick="toggleSubTask(${task.id}, ${idx})">
+                  <span class="sub-check">${sub.done ? '☑' : '☐'}</span>
+                  <span class="sub-text ${sub.done ? 'done' : ''}">${sub.text}</span>
+                </div>
+                <button class="delete-btn" style="border:none;background:none;color:#999;cursor:pointer" onclick="deleteSubTask(${task.id}, ${idx})">×</button>
+              </li>
+            `).join('')}
+          </ul>
+          <input type="text" class="sub-input" placeholder="↳ Sub-task..." onkeypress="addSubTask(event, ${task.id})">
+        </div>
+      `;
+
+      // 해당 카테고리 리스트에 추가
+      const listEl = document.getElementById(`list-${task.category}`);
+      if(listEl) {
+        listEl.appendChild(li);
+        document.getElementById(`sec-${task.category}`).classList.add('has-items');
+      }
+    });
+
+    // 3. 전체 달성률 업데이트
+    const dailyPercent = totalTasks === 0 ? 0 : Math.round((totalDone / totalTasks) * 100);
+    document.getElementById('dailyPercent').innerText = `${dailyPercent}%`;
+    document.getElementById('dailyBar').style.width = `${dailyPercent}%`;
   }
 
-  function toggleMainDone(div) {
-    const textSpan = div.querySelector('.task-title');
-    const iconSpan = div.querySelector('.icon-check');
-    if (textSpan.classList.contains('done')) {
-      textSpan.classList.remove('done'); iconSpan.innerText = '⬜';
-    } else {
-      textSpan.classList.add('done'); iconSpan.innerText = '✅';
-      // 메인 완료 시 하위 항목도 모두 완료 처리 원할 경우 여기에 로직 추가 가능
-      // (현재는 메인만 완료 표시)
+  // --- 이벤트 핸들러 ---
+  function toggleTask(id) {
+    const tasks = getTasks();
+    const task = tasks.find(t => t.id === id);
+    if(task) {
+      task.done = !task.done;
+      saveData(tasks);
     }
-    saveData();
   }
 
-  function deleteTask(btn) {
-    if(confirm('삭제하시겠습니까?')) {
-      btn.closest('.task-item').remove();
-      saveData();
+  function deleteTask(id) {
+    if(!confirm('Delete this task?')) return;
+    const tasks = getTasks().filter(t => t.id !== id);
+    saveData(tasks);
+  }
+
+  function addSubTask(e, taskId) {
+    if(e.key === 'Enter') {
+      const text = e.target.value;
+      if(!text) return;
+      
+      const tasks = getTasks();
+      const task = tasks.find(t => t.id === taskId);
+      if(task) {
+        task.subTasks.push({ text: text, done: false });
+        // 자동 완료 해제 (옵션)
+        if(task.done) task.done = false;
+        saveData(tasks);
+      }
+    }
+  }
+
+  function toggleSubTask(taskId, subIdx) {
+    const tasks = getTasks();
+    const task = tasks.find(t => t.id === taskId);
+    if(task) {
+      const sub = task.subTasks[subIdx];
+      sub.done = !sub.done;
+      
+      // 자동 완료 로직
+      const allSubDone = task.subTasks.every(s => s.done);
+      if(allSubDone && task.subTasks.length > 0) task.done = true;
+      else if(!allSubDone && task.done) task.done = false;
+      
+      saveData(tasks);
+    }
+  }
+
+  function deleteSubTask(taskId, subIdx) {
+    const tasks = getTasks();
+    const task = tasks.find(t => t.id === taskId);
+    if(task) {
+      task.subTasks.splice(subIdx, 1);
+      
+      // 삭제 후 자동완료 상태 재확인
+      if(task.subTasks.length > 0 && task.subTasks.every(s => s.done)) task.done = true;
+      
+      saveData(tasks);
     }
   }
 
   function toggleDetails(btn) {
-    const subContainer = btn.closest('.task-header').nextElementSibling;
-    subContainer.classList.toggle('show');
-    btn.innerText = subContainer.classList.contains('show') ? 'Close ▲' : 'Details ▼';
-    if(subContainer.classList.contains('show')) subContainer.querySelector('.sub-input').focus();
+    const container = btn.closest('.task-header').nextElementSibling;
+    container.classList.toggle('show');
+    btn.innerText = container.classList.contains('show') ? '▲' : '▼';
+    if(container.classList.contains('show')) container.querySelector('input').focus();
   }
 
-  // --- 4. 하위 태스크 로직 및 자동 완료 기능 ---
-  function addSubTask(event, input) {
-    if (event.key === 'Enter') {
-      if (!input.value) return;
-      createSubTaskElement(input.nextElementSibling, input.value, false);
-      input.value = '';
-      
-      // 하위 태스크 추가되면 메인의 완료 상태를 재계산(체크 풀림 방지 등)
-      checkAutoMainComplete(input.closest('.task-item'));
-      updateSubProgress(input.closest('.task-item'));
-      saveData();
-    }
+  // --- 타이머 (기존 유지) ---
+  let timeLeft = 1500; let interval; let isRunning = false;
+  function updateTimer() {
+    const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+    const s = (timeLeft % 60).toString().padStart(2, '0');
+    document.getElementById('timer').innerText = `${m}:${s}`;
+    document.title = `${m}:${s} - Focus`;
   }
-
-  function createSubTaskElement(ul, text, isDone) {
-    const li = document.createElement('li');
-    li.className = 'sub-task-item';
-    li.innerHTML = `
-      <div class="sub-task-left" onclick="toggleSubDone(this)">
-        <span class="icon-check">${isDone ? '✔' : '◽'}</span> 
-        <span class="sub-text ${isDone ? 'done' : ''}">${text}</span>
-      </div>
-      <button class="delete-btn" onclick="deleteSubTask(this)">×</button>
-    `;
-    ul.appendChild(li);
+  function startTimer() {
+    const btn = document.getElementById('timerBtn');
+    if(isRunning) { clearInterval(interval); isRunning = false; btn.innerText = 'Resume'; return; }
+    isRunning = true; btn.innerText = 'Pause';
+    interval = setInterval(() => {
+      timeLeft--; updateTimer();
+      if(timeLeft === 0) { clearInterval(interval); isRunning = false; alert('Time is up!'); resetTimer(); }
+    }, 1000);
   }
-
-  function toggleSubDone(div) {
-    const textSpan = div.querySelector('.sub-text');
-    const iconSpan = div.querySelector('.icon-check');
-    const taskItem = div.closest('.task-item');
-
-    if (textSpan.classList.contains('done')) {
-      textSpan.classList.remove('done'); iconSpan.innerText = '◽';
-    } else {
-      textSpan.classList.add('done'); iconSpan.innerText = '✔';
-    }
-    
-    checkAutoMainComplete(taskItem); // 메인 태스크 자동 완료 체크
-    updateSubProgress(taskItem);
-    saveData();
-  }
-
-  // [핵심 기능] 하위 태스크 상태에 따른 메인 태스크 자동 처리
-  function checkAutoMainComplete(taskItem) {
-    const subItems = taskItem.querySelectorAll('.sub-task-item');
-    const doneItems = taskItem.querySelectorAll('.sub-text.done');
-    const mainTitle = taskItem.querySelector('.task-title');
-    const mainIcon = taskItem.querySelector('.task-left .icon-check');
-
-    if (subItems.length > 0) {
-      if (subItems.length === doneItems.length) {
-        // 모두 완료되면 메인도 완료
-        if (!mainTitle.classList.contains('done')) {
-          mainTitle.classList.add('done');
-          mainIcon.innerText = '✅';
-        }
-      } else {
-        // 하나라도 미완료면 메인은 미완료
-        if (mainTitle.classList.contains('done')) {
-          mainTitle.classList.remove('done');
-          mainIcon.innerText = '⬜';
-        }
-      }
-    }
-  }
-
-  function deleteSubTask(btn) {
-    const li = btn.closest('.sub-task-item');
-    const taskItem = li.closest('.task-item');
-    li.remove();
-    checkAutoMainComplete(taskItem);
-    updateSubProgress(taskItem);
-    saveData();
-  }
-
-  // --- 5. 퍼센트 계산 및 통합 업데이트 ---
-  function updateSubProgress(taskItem) {
-    const subList = taskItem.querySelector('.sub-task-list');
-    const totalSub = subList.querySelectorAll('.sub-task-item').length;
-    const doneSub = subList.querySelectorAll('.sub-text.done').length;
-    const percentSpan = taskItem.querySelector('.sub-percent');
-
-    if (totalSub === 0) {
-      percentSpan.innerText = '';
-    } else {
-      const percent = Math.round((doneSub / totalSub) * 100);
-      percentSpan.innerText = `(${percent}%)`;
-      percentSpan.style.color = percent === 100 ? '#2e8b57' : 'var(--progress-color)';
-    }
-  }
-
-  function updateDailyProgress() {
-    const tasks = document.querySelectorAll('.task-item');
-    const total = tasks.length;
-    let doneCount = 0;
-
-    tasks.forEach(task => {
-      if (task.querySelector('.task-title').classList.contains('done')) {
-        doneCount++;
-      }
-    });
-
-    const percent = total === 0 ? 0 : Math.round((doneCount / total) * 100);
-    
-    document.getElementById('dailyPercent').innerText = `${percent}%`;
-    document.getElementById('dailyBar').style.width = `${percent}%`;
-    
-    // 달성률 100%면 바 색상 변경 (초록색)
-    if(percent === 100 && total > 0) {
-        document.getElementById('dailyBar').style.backgroundColor = '#2e8b57';
-    } else {
-        document.getElementById('dailyBar').style.backgroundColor = 'var(--accent-color)';
-    }
-  }
+  function resetTimer() { clearInterval(interval); isRunning = false; timeLeft = 1500; updateTimer(); document.getElementById('timerBtn').innerText = 'Start'; }
 </script>
 
 </body>
