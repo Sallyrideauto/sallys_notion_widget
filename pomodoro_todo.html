@@ -6,36 +6,27 @@
   /* --- 1. 색상 및 변수 설정 --- */
   :root {
     --text-main: #37352f;
-    --text-sub: #787774;
+    --text-sub: #4a4a4a; /* 배경색 위에서도 잘 보이도록 조금 더 진하게 */
     
-    /* 카드 배경색: 노션 배경과 구분되도록 약간 불투명하게 설정 */
-    --bg-card: rgba(255, 255, 255, 0.95);
-    --shadow-card: 0 1px 3px rgba(0,0,0,0.08);
+    /* 입력창 테두리 (투명 배경이므로 테두리로 영역 표시) */
+    --border-input: rgba(55, 53, 47, 0.4);
     
-    /* 입력창 배경 */
-    --bg-input: rgba(255, 255, 255, 0.5);
-    --border-color: rgba(55, 53, 47, 0.16);
-    --hover-bg: rgba(55, 53, 47, 0.08);
-    
-    /* 요청하신 카테고리 색상 */
+    /* 요청하신 카테고리 색상 (할 일 배경색) */
     --c-work: #7CAFC4;
     --c-study: #A1C084;
     --c-social: #EAC9C1;
     --c-mind: #EBD8D0;
     
-    --danger-color: #eb5757;
+    --shadow-card: 0 2px 5px rgba(0,0,0,0.1);
+    --danger-color: #c0392b; /* 배경색 위에서 잘 보이도록 진한 빨강 */
   }
 
-  /* 다크 모드 대응 */
+  /* 다크 모드 감지 (글자색 조정) */
   @media (prefers-color-scheme: dark) {
     :root {
-      --text-main: #d9d9d9;
-      --text-sub: #9b9b9b;
-      --bg-card: rgba(45, 45, 45, 0.95); /* 다크모드에서는 어두운 배경 */
-      --shadow-card: 0 1px 3px rgba(0,0,0,0.3);
-      --bg-input: rgba(255, 255, 255, 0.1);
-      --border-color: rgba(255, 255, 255, 0.13);
-      --hover-bg: rgba(255, 255, 255, 0.08);
+      --text-main: #1a1a1a; /* 밝은 파스텔 배경 위라 글자는 어두운 게 가독성이 좋습니다 */
+      --text-sub: #333333;
+      --border-input: rgba(255, 255, 255, 0.4);
     }
   }
 
@@ -43,55 +34,69 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     padding: 20px;
     color: var(--text-main);
-    background: transparent; /* 전체 배경은 투명 (노션 배경 유지) */
+    background: transparent;
     margin: 0;
   }
 
   /* --- 타이머 디자인 --- */
-  .timer-box { text-align: center; margin-bottom: 25px; }
+  .timer-box { text-align: center; margin-bottom: 25px; color: #37352f; }
+  @media (prefers-color-scheme: dark) { .timer-box { color: #d9d9d9; } } /* 타이머 숫자는 노션 배경 따라가기 */
+  
   .time { font-size: 52px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -2px; margin-bottom: 10px; }
+  
   .btn {
-    padding: 6px 16px; border: 1px solid var(--border-color); border-radius: 8px;
-    background: var(--bg-card); color: var(--text-main); cursor: pointer;
-    font-size: 13px; font-weight: 500; transition: 0.2s;
-    box-shadow: var(--shadow-card);
+    padding: 6px 16px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px;
+    background: rgba(255,255,255,0.8); color: #333; cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   }
-  .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
-  .btn:active { transform: translateY(0); }
+  .btn:hover { background: white; transform: translateY(-1px); }
 
   /* --- 달성률 바 --- */
   .daily-progress-container { margin-bottom: 25px; padding: 0 4px; }
-  .daily-label { font-size: 12px; color: var(--text-sub); display: flex; justify-content: space-between; margin-bottom: 6px; font-weight: 600; }
-  .progress-bar-bg { width: 100%; height: 8px; background: rgba(55,53,47, 0.08); border-radius: 4px; overflow: hidden; }
+  .daily-label { font-size: 12px; color: var(--text-sub); display: flex; justify-content: space-between; margin-bottom: 6px; font-weight: 700; opacity: 0.8; }
+  /* 라벨 색상은 노션 배경 위이므로 일반 텍스트 색상 사용 */
+  @media (prefers-color-scheme: dark) { .daily-label { color: #9b9b9b; } }
+  
+  .progress-bar-bg { width: 100%; height: 8px; background: rgba(55,53,47, 0.1); border-radius: 4px; overflow: hidden; }
+  @media (prefers-color-scheme: dark) { .progress-bar-bg { background: rgba(255,255,255, 0.2); } }
+
   .progress-bar-fill {
-    height: 100%; width: 0%; background: var(--text-main); border-radius: 4px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%; width: 0%; background: #37352f; border-radius: 4px; transition: width 0.5s ease;
   }
+  @media (prefers-color-scheme: dark) { .progress-bar-fill { background: #d9d9d9; } }
+
 
   /* --- 카테고리 버튼 --- */
   .category-selector { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
   .cat-btn {
     border: 1px solid transparent; background: transparent; 
-    padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-    cursor: pointer; opacity: 0.5; transition: 0.2s; display: flex; align-items: center; gap: 6px;
-    color: var(--text-sub); border: 1px solid var(--border-color);
+    padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;
+    cursor: pointer; opacity: 0.6; transition: 0.2s; display: flex; align-items: center; gap: 6px;
+    color: #787774; border: 1px solid rgba(55,53,47,0.2);
   }
-  .cat-btn:hover { opacity: 0.8; }
-  
-  /* 활성화된 버튼 */
-  .cat-btn.active { opacity: 1; background: var(--bg-card); box-shadow: var(--shadow-card); border-color: currentColor; }
-  .cat-btn.active.work { color: var(--c-work); }
-  .cat-btn.active.study { color: var(--c-study); }
-  .cat-btn.active.social { color: var(--c-social); }
-  .cat-btn.active.mind { color: var(--c-mind); }
+  @media (prefers-color-scheme: dark) { .cat-btn { color: #9b9b9b; border-color: rgba(255,255,255,0.2); } }
 
-  /* 입력창 */
+  .cat-btn:hover { opacity: 1; transform: translateY(-1px); }
+  
+  /* 활성화된 버튼: 해당 색상으로 채움 */
+  .cat-btn.active { opacity: 1; color: #222; border-color: transparent; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .cat-btn.active.work { background: var(--c-work); }
+  .cat-btn.active.study { background: var(--c-study); }
+  .cat-btn.active.social { background: var(--c-social); }
+  .cat-btn.active.mind { background: var(--c-mind); }
+
+  /* --- 입력창 (투명 배경) --- */
   .task-input {
-    width: 100%; padding: 12px; border: 1px solid var(--border-color);
-    background: var(--bg-card); color: var(--text-main);
+    width: 100%; padding: 12px; 
+    background: transparent; /* 투명 배경 */
+    border: 1px solid var(--border-input);
+    color: inherit; /* 부모(body) 색상 상속 */
     border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px;
-    margin-bottom: 24px; transition: 0.2s; box-shadow: var(--shadow-card);
+    margin-bottom: 24px; transition: 0.2s;
   }
-  .task-input:focus { border-color: var(--text-sub); transform: translateY(-1px); }
+  @media (prefers-color-scheme: dark) { .task-input { color: #d9d9d9; } }
+  .task-input:focus { border-color: var(--c-work); border-width: 1.5px; }
 
   /* --- 리스트 섹션 --- */
   .section-container { margin-bottom: 24px; display: none; }
@@ -100,8 +105,9 @@
   .section-header {
     font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 800;
     margin-bottom: 10px; padding-left: 4px; display: flex; align-items: center; gap: 8px;
+    opacity: 0.9;
   }
-  /* 섹션 헤더 색상 */
+  /* 헤더 텍스트 색상 */
   .sec-work { color: var(--c-work); }
   .sec-study { color: var(--c-study); }
   .sec-social { color: var(--c-social); }
@@ -109,61 +115,59 @@
 
   .task-list { list-style: none; padding: 0; margin: 0; }
 
-  /* --- 태스크 아이템 (카드 디자인) --- */
+  /* --- 태스크 아이템 (카드 전체에 색상 적용) --- */
   .task-item {
     margin-bottom: 10px; padding: 12px 14px; border-radius: 8px;
-    background: var(--bg-card); /* 배경색 적용 */
-    box-shadow: var(--shadow-card); /* 그림자 적용 */
-    border-left: 5px solid transparent; /* 왼쪽 컬러 바 */
+    box-shadow: var(--shadow-card);
     transition: transform 0.2s, box-shadow 0.2s;
-    position: relative;
+    color: #2c2c2c; /* 파스텔 배경 위 검은 글씨 */
   }
-  .task-item:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.12); }
+  .task-item:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
 
-  /* 카테고리별 왼쪽 라인 색상 */
-  .task-item[data-cat="work"] { border-left-color: var(--c-work); }
-  .task-item[data-cat="study"] { border-left-color: var(--c-study); }
-  .task-item[data-cat="social"] { border-left-color: var(--c-social); }
-  .task-item[data-cat="mind"] { border-left-color: var(--c-mind); }
+  /* 배경색 적용 로직 */
+  .task-item[data-cat="work"] { background: var(--c-work); }
+  .task-item[data-cat="study"] { background: var(--c-study); }
+  .task-item[data-cat="social"] { background: var(--c-social); }
+  .task-item[data-cat="mind"] { background: var(--c-mind); }
 
   .task-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
   .task-left { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
   
-  /* 체크박스 디자인 */
+  /* 체크박스 (흰색 배경으로 눈에 띄게) */
   .custom-check { 
-    width: 18px; height: 18px; border: 2px solid currentColor; border-radius: 50%; 
+    width: 18px; height: 18px; background: rgba(255,255,255,0.4); 
+    border: 1.5px solid rgba(0,0,0,0.2); border-radius: 50%; 
     display: flex; align-items: center; justify-content: center; font-size: 12px; transition: 0.2s;
   }
-  .done .custom-check { background: currentColor; color: white; border-color: transparent; }
+  /* 완료 시 체크박스 진하게 */
+  .done .custom-check { background: #333; color: white; border-color: transparent; }
   
-  .task-item[data-cat="work"] .custom-check { color: var(--c-work); }
-  .task-item[data-cat="study"] .custom-check { color: var(--c-study); }
-  .task-item[data-cat="social"] .custom-check { color: var(--c-social); }
-  .task-item[data-cat="mind"] .custom-check { color: var(--c-mind); }
-
-  .task-title { font-size: 15px; font-weight: 500; transition: 0.2s; }
-  .sub-percent { font-size: 11px; opacity: 0.7; font-weight: 700; }
+  .task-title { font-size: 15px; font-weight: 600; transition: 0.2s; }
+  .sub-percent { font-size: 11px; opacity: 0.6; font-weight: 700; color: #000; }
   
-  .task-controls button { background: none; border: none; cursor: pointer; color: var(--text-sub); opacity: 0.4; padding: 4px; transition: 0.2s; }
-  .task-controls button:hover { opacity: 1; color: var(--text-main); }
+  .task-controls button { background: none; border: none; cursor: pointer; color: #444; opacity: 0.5; padding: 4px; transition: 0.2s; }
+  .task-controls button:hover { opacity: 1; color: #000; }
   .delete-btn:hover { color: var(--danger-color) !important; }
 
   /* 하위 태스크 */
-  .sub-tasks-container { display: none; margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.05); }
+  .sub-tasks-container { display: none; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.08); }
   .sub-tasks-container.show { display: block; }
   
+  /* 하위 입력창 (약간 어둡게 하여 구분) */
   .sub-input {
-    width: 100%; border: none; background: rgba(0,0,0,0.03); 
+    width: 100%; border: none; background: rgba(0,0,0,0.05); 
     border-radius: 4px; padding: 6px 8px;
-    color: var(--text-main); font-size: 13px; outline: none; margin-bottom: 8px;
+    color: #333; font-size: 13px; outline: none; margin-bottom: 8px;
   }
-  .sub-task-item { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--text-sub); padding: 4px 0; }
+  .sub-input::placeholder { color: rgba(0,0,0,0.4); }
+
+  .sub-task-item { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #444; padding: 4px 0; }
   .sub-left { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-  .sub-check { font-size: 14px; }
+  .sub-check { font-size: 14px; opacity: 0.6; }
   
   /* 완료 상태 */
-  .done-title { text-decoration: line-through; opacity: 0.5; color: var(--text-sub); }
-  .sub-text.done { text-decoration: line-through; opacity: 0.6; }
+  .done-title { text-decoration: line-through; opacity: 0.5; }
+  .sub-text.done { text-decoration: line-through; opacity: 0.5; }
 
 </style>
 </head>
@@ -217,8 +221,8 @@
 <script>
   // --- 설정 및 상태 관리 ---
   let currentCategory = 'work';
-  const STORAGE_KEY = 'notion_pomodoro_v3';
-  const DATE_KEY = 'notion_pomodoro_date_v3';
+  const STORAGE_KEY = 'notion_pomodoro_final';
+  const DATE_KEY = 'notion_pomodoro_date_final';
 
   window.onload = function() {
     const today = new Date().toLocaleDateString();
@@ -229,6 +233,8 @@
       saveData([]); 
     }
     loadTasks();
+    // 초기 로딩 시 입력창 보더 색상 설정
+    updateInputBorder('work');
   };
 
   function selectCategory(cat) {
@@ -241,9 +247,17 @@
     input.placeholder = `Add task to ${capital}...`;
     input.focus();
     
-    // 입력창 테두리 색상도 카테고리에 맞춰 변경 (UX 향상)
-    const colorVar = getComputedStyle(document.documentElement).getPropertyValue(`--c-${cat}`).trim();
-    input.style.borderColor = colorVar;
+    updateInputBorder(cat);
+  }
+  
+  function updateInputBorder(cat) {
+    // 포커스 시 색상을 카테고리 색으로
+    const input = document.getElementById('mainTaskInput');
+    // CSS 변수 값을 가져오기 위해 임시 요소 사용하지 않고 직접 매핑
+    const colors = { work: '#7CAFC4', study: '#A1C084', social: '#EAC9C1', mind: '#EBD8D0' };
+    input.style.borderColor = "var(--border-input)"; // 평소엔 기본색
+    input.onfocus = () => input.style.borderColor = colors[cat];
+    input.onblur = () => input.style.borderColor = "var(--border-input)";
   }
 
   function handleInput(e) {
@@ -294,7 +308,7 @@
           <div class="task-left" onclick="toggleTask(${task.id})">
             <div class="custom-check ${doneClass}">✔</div>
             <span class="task-title ${doneTitle}">${task.text}</span>
-            <span class="sub-percent" style="color:var(--c-${task.category})">${percentStr}</span>
+            <span class="sub-percent">${percentStr}</span>
           </div>
           <div class="task-controls">
             <button onclick="toggleDetails(this)">▼</button>
@@ -306,14 +320,14 @@
             ${task.subTasks.map((sub, idx) => `
               <li class="sub-task-item">
                 <div class="sub-left" onclick="toggleSubTask(${task.id}, ${idx})">
-                  <span class="sub-check" style="color:${sub.done ? 'var(--text-sub)' : 'var(--c-'+task.category+')'}">${sub.done ? '☑' : '☐'}</span>
+                  <span class="sub-check">${sub.done ? '☑' : '☐'}</span>
                   <span class="sub-text ${sub.done ? 'done' : ''}">${sub.text}</span>
                 </div>
-                <button class="delete-btn" style="border:none;background:none;color:#aaa;cursor:pointer" onclick="deleteSubTask(${task.id}, ${idx})">×</button>
+                <button class="delete-btn" style="border:none;background:none;color:#555;cursor:pointer" onclick="deleteSubTask(${task.id}, ${idx})">×</button>
               </li>
             `).join('')}
           </ul>
-          <input type="text" class="sub-input" placeholder="↳ 하위 작업 추가..." onkeypress="addSubTask(event, ${task.id})">
+          <input type="text" class="sub-input" placeholder="↳ 하위 작업..." onkeypress="addSubTask(event, ${task.id})">
         </div>
       `;
       
@@ -325,9 +339,6 @@
     document.getElementById('dailyPercent').innerText = `${dailyPercent}%`;
     const bar = document.getElementById('dailyBar');
     bar.style.width = `${dailyPercent}%`;
-    
-    // 달성률 바 색상은 현재 선택된 카테고리 색상 혹은 기본 완료 색상으로
-    bar.style.backgroundColor = dailyPercent === 100 ? '#4caf50' : '#37352f';
   }
 
   // --- 이벤트 로직 ---
