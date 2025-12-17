@@ -1,54 +1,146 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background-color: transperent; }
+  /* 1. CSS 변수 및 다크모드 설정 (이전과 동일) */
+  :root {
+    --text-main: #37352f;
+    --text-sub: #787774;
+    --bg-input: rgba(255, 255, 255, 0.6);
+    --border-color: rgba(55, 53, 47, 0.16);
+    --hover-bg: rgba(55, 53, 47, 0.08);
+    --accent-color: #e16259;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --text-main: #d9d9d9;
+      --text-sub: #9b9b9b;
+      --bg-input: rgba(255, 255, 255, 0.1);
+      --border-color: rgba(255, 255, 255, 0.13);
+      --hover-bg: rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 20px;
+    background-color: transparent;
+    color: var(--text-main);
+    margin: 0;
+  }
+
   /* 타이머 스타일 */
-  .timer-box { text-align: center; margin-bottom: 20px; }
-  .time { font-size: 48px; font-weight: bold; color: #37352f; }
-  .btn { padding: 8px 16px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
-  .start { background-color: #e16259; color: white; }
-  .reset { background-color: #e0e0e0; }
+  .timer-box { text-align: center; margin-bottom: 25px; }
+  .time { font-size: 56px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -2px; margin-bottom: 10px; }
   
-  /* 태스크 리스트 스타일 */
-  .task-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;}
+  .btn-group { display: flex; justify-content: center; gap: 10px; }
+  .btn {
+    padding: 6px 16px; border: 1px solid var(--border-color); border-radius: 6px;
+    background: var(--bg-input); color: var(--text-main); cursor: pointer;
+    font-size: 14px; transition: background 0.2s;
+  }
+  .btn:hover { background: var(--hover-bg); }
+  .btn.start { border-color: var(--accent-color); color: var(--accent-color); font-weight: 600; }
+
+  /* 메인 태스크 리스트 스타일 */
+  .task-input {
+    width: 100%; padding: 10px; border: 1px solid var(--border-color);
+    background: var(--bg-input); color: var(--text-main);
+    border-radius: 6px; box-sizing: border-box; outline: none;
+    font-size: 14px;
+  }
+  .task-input::placeholder { color: var(--text-sub); }
+
   .task-list { list-style: none; padding: 0; margin-top: 15px; }
-  .task-item { background: white; margin-bottom: 8px; padding: 10px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-  .task-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-  .sub-tasks { display: none; margin-top: 10px; padding-left: 20px; border-left: 2px solid #eee; }
+  .task-item {
+    margin-bottom: 8px; padding: 8px; border-radius: 6px;
+    transition: background 0.2s; border: 1px solid transparent;
+  }
+  .task-item:hover { background: var(--hover-bg); border-color: var(--border-color); }
+
+  .task-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+  .task-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; }
+  .details-btn { font-size: 12px; color: var(--text-sub); background: none; border: none; cursor: pointer; }
+  
+  /* 하위 태스크 영역 스타일 */
+  .sub-tasks-container {
+    display: none; margin-top: 10px; padding-left: 28px;
+    border-left: 2px solid var(--border-color); margin-left: 4px;
+  }
   .show { display: block; }
-  .sub-input { width: 90%; padding: 5px; margin-top: 5px; border: 1px solid #eee; }
+
+  /* 하위 태스크 입력창 */
+  .sub-input {
+    width: 100%; padding: 6px; background: transparent;
+    border: none; border-bottom: 1px dashed var(--border-color);
+    color: var(--text-sub); font-size: 13px; outline: none;
+    margin-bottom: 8px;
+  }
+  .sub-input::placeholder { font-style: italic; opacity: 0.7; }
+
+  /* 하위 태스크 리스트 */
+  .sub-task-list { list-style: none; padding: 0; }
+  .sub-task-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--text-sub);
+    padding: 3px 0; cursor: pointer; user-select: none;
+  }
+  .sub-task-item:hover { color: var(--text-main); }
+  
+  /* 완료 상태 스타일 */
+  .done { text-decoration: line-through; opacity: 0.6; }
+  .icon-check { min-width: 18px; text-align: center; }
 </style>
 </head>
 <body>
 
 <div class="timer-box">
   <div class="time" id="timer">25:00</div>
-  <button class="btn start" onclick="startTimer()">Start</button>
-  <button class="btn reset" onclick="resetTimer()">Reset</button>
+  <div class="btn-group">
+    <button class="btn start" onclick="startTimer()">Start</button>
+    <button class="btn" onclick="resetTimer()">Reset</button>
+  </div>
 </div>
 
-<input type="text" class="task-input" id="mainTaskInput" placeholder="할 일을 입력하고 엔터 (클릭하여 세부 내용 추가)">
+<input type="text" class="task-input" id="mainTaskInput" placeholder="+ 할 일 추가 (Enter)">
 <ul class="task-list" id="taskList"></ul>
 
 <script>
-  // 타이머 로직
-  let timeLeft = 1500; let interval;
+  // --- 타이머 로직 (변경 없음) ---
+  let timeLeft = 1500; let interval; let isRunning = false;
+  
   function updateDisplay() {
     const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
     const s = (timeLeft % 60).toString().padStart(2, '0');
     document.getElementById('timer').innerText = `${m}:${s}`;
+    document.title = `${m}:${s} - Pomodoro`;
   }
+  
   function startTimer() {
-    if(interval) return;
+    if(isRunning) {
+      clearInterval(interval); isRunning = false;
+      document.querySelector('.start').innerText = 'Resume';
+      return;
+    }
+    isRunning = true;
+    document.querySelector('.start').innerText = 'Pause';
     interval = setInterval(() => {
       timeLeft--; updateDisplay();
-      if(timeLeft === 0) { clearInterval(interval); alert('뽀모도로 끝!'); }
+      if(timeLeft === 0) { 
+        clearInterval(interval); isRunning = false; 
+        alert('집중 시간 종료!'); resetTimer(); 
+      }
     }, 1000);
   }
-  function resetTimer() { clearInterval(interval); interval = null; timeLeft = 1500; updateDisplay(); }
+  
+  function resetTimer() { 
+    clearInterval(interval); isRunning = false; timeLeft = 1500; 
+    updateDisplay(); document.querySelector('.start').innerText = 'Start';
+  }
 
-  // 투두 리스트 로직
+  // --- 메인 투두 리스트 로직 ---
   document.getElementById('mainTaskInput').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
       const text = this.value;
@@ -56,18 +148,81 @@
       
       const li = document.createElement('li');
       li.className = 'task-item';
+      // 고유 ID 생성 (하위 태스크 연결용)
+      const uniqueId = 'task-' + Date.now();
+      
       li.innerHTML = `
-        <div class="task-header" onclick="this.nextElementSibling.classList.toggle('show')">
-          <span>⬜ ${text}</span> <small>🔽 Details</small>
+        <div class="task-header">
+          <span class="task-title" onclick="toggleMainDone(this)">
+            <span class="icon-check">⬜</span> <span>${text}</span>
+          </span>
+          <button class="details-btn" onclick="toggleDetails(this)">Details ▼</button>
         </div>
-        <div class="sub-tasks">
-          <textarea class="sub-input" placeholder="세부 메모나 하위 태스크 입력..."></textarea>
+        <div class="sub-tasks-container">
+          <input type="text" class="sub-input" placeholder="↳ 하위 할 일 입력 후 Enter..." onkeypress="addSubTask(event, this)">
+          <ul class="sub-task-list"></ul>
         </div>
       `;
       document.getElementById('taskList').appendChild(li);
       this.value = '';
     }
   });
+
+  // 메인 태스크 완료 토글
+  function toggleMainDone(span) {
+    const textSpan = span.querySelector('span:last-child');
+    const iconSpan = span.querySelector('span:first-child');
+    
+    if (textSpan.classList.contains('done')) {
+      textSpan.classList.remove('done');
+      iconSpan.innerText = '⬜';
+    } else {
+      textSpan.classList.add('done');
+      iconSpan.innerText = '✅';
+    }
+  }
+
+  // 세부사항 펼치기/접기
+  function toggleDetails(btn) {
+    const subContainer = btn.parentElement.nextElementSibling;
+    subContainer.classList.toggle('show');
+    btn.innerText = subContainer.classList.contains('show') ? 'Close ▲' : 'Details ▼';
+    // 펼쳐질 때 하위 입력창에 포커스
+    if(subContainer.classList.contains('show')) {
+        subContainer.querySelector('.sub-input').focus();
+    }
+  }
+
+  // --- 하위 태스크 추가 및 관리 로직 ---
+  function addSubTask(event, input) {
+    if (event.key === 'Enter') {
+      const text = input.value;
+      if (!text) return;
+
+      const ul = input.nextElementSibling; // 바로 뒤에 있는 ul 태그 찾기
+      const li = document.createElement('li');
+      li.className = 'sub-task-item';
+      li.onclick = function() { toggleSubDone(this); }; // 클릭 이벤트 연결
+      li.innerHTML = `<span class="icon-check">◽</span> <span class="sub-text">${text}</span>`;
+      
+      ul.appendChild(li);
+      input.value = ''; // 입력창 초기화
+    }
+  }
+
+  // 하위 태스크 완료 토글
+  function toggleSubDone(li) {
+    const textSpan = li.querySelector('.sub-text');
+    const iconSpan = li.querySelector('.icon-check');
+
+    if (textSpan.classList.contains('done')) {
+      textSpan.classList.remove('done');
+      iconSpan.innerText = '◽';
+    } else {
+      textSpan.classList.add('done');
+      iconSpan.innerText = '✔';
+    }
+  }
 </script>
 
 </body>
