@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <style>
-    /* Departure Mono 폰트 불러오기 */
+    /* 폰트 불러오기 */
     @font-face {
         font-family: 'Departure Mono';
         src: url('https://cdn.jsdelivr.net/gh/ozcanzaferayan/departure-mono@main/fonts/DepartureMono-Regular.woff2') format('woff2');
@@ -25,7 +25,7 @@
     }
     .container {
         display: flex;
-        gap: 20px; 
+        gap: 30px; /* 날짜가 생겨서 간격을 20px -> 30px로 살짝 넓혀 여유를 줌 */
         text-align: center;
     }
     .clock-box {
@@ -35,7 +35,7 @@
     .label {
         font-size: 13px; 
         color: #9b9a97;
-        margin-bottom: 8px;
+        margin-bottom: 5px;
         text-transform: uppercase;
         letter-spacing: 0px; 
     }
@@ -43,13 +43,21 @@
         font-size: 32px; 
         font-weight: normal;
         white-space: nowrap;
-        line-height: 1;
+        line-height: 1.1; /* 줄 간격 살짝 조정 */
+        margin-bottom: 2px; /* 시간과 날짜 사이 간격 */
+    }
+    /* ▼▼▼ 날짜 스타일 추가된 부분 ▼▼▼ */
+    .date {
+        font-size: 14px;
+        color: #9b9a97; /* 라벨과 같은 회색 */
+        white-space: nowrap;
+        opacity: 0.8;
     }
     
     /* 다크모드 대응 */
     @media (prefers-color-scheme: dark) {
         body { color: #ffffff; }
-        .label { color: rgba(255, 255, 255, 0.6); }
+        .label, .date { color: rgba(255, 255, 255, 0.6); }
     }
 </style>
 </head>
@@ -57,42 +65,56 @@
 
 <div class="container">
     <div class="clock-box">
-        <div class="label">🇨🇦Calgary</div> <div class="time" id="local-time">00:00</div>
+        <div class="label">🇨🇦Calgary</div>
+        <div class="time" id="local-time">00:00</div>
+        <div class="date" id="local-date">--- --, ---</div>
     </div>
 
     <div class="clock-box">
         <div class="label" id="target-label">🇰🇷Seoul</div>
         <div class="time" id="target-time">00:00</div>
+        <div class="date" id="target-date">--- --, ---</div>
     </div>
 </div>
 
 <script>
-    // ▼▼▼ 설정 구간 (서울로 변경됨) ▼▼▼
     const targetTimeZone = 'Asia/Seoul'; 
     const targetCityName = 'Seoul'; 
-    // ▲▲▲ 설정 끝 ▲▲▲
 
     document.getElementById('target-label').innerText = targetCityName;
 
     function updateTime() {
         const now = new Date();
 
-        // 1. 캘거리 시간 (현재 브라우저/시스템 시간)
-        const localTimeStr = now.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false 
-        });
-        document.getElementById('local-time').innerText = localTimeStr;
+        // 날짜 표시 형식 옵션 (월, 일, 요일)
+        const dateOptions = { 
+            month: 'short', // Dec
+            day: 'numeric', // 17
+            weekday: 'short' // Wed
+        };
 
-        // 2. 서울 시간 (타임존 강제 지정)
+        // 1. 캘거리 (로컬)
+        const localTimeStr = now.toLocaleTimeString('en-US', {
+            hour: '2-digit', minute: '2-digit', hour12: false 
+        });
+        const localDateStr = now.toLocaleDateString('en-US', dateOptions); // 날짜 계산
+        
+        document.getElementById('local-time').innerText = localTimeStr;
+        document.getElementById('local-date').innerText = localDateStr;
+
+        // 2. 서울 (타임존 적용)
         const targetTimeStr = now.toLocaleTimeString('en-US', {
             timeZone: targetTimeZone,
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false 
+            hour: '2-digit', minute: '2-digit', hour12: false 
         });
+        // 서울의 날짜 계산 (중요: 서울 시간을 기준으로 날짜가 넘어가야 함)
+        const targetDateStr = now.toLocaleDateString('en-US', {
+            ...dateOptions,
+            timeZone: targetTimeZone
+        });
+
         document.getElementById('target-time').innerText = targetTimeStr;
+        document.getElementById('target-date').innerText = targetDateStr;
     }
 
     setInterval(updateTime, 1000);
