@@ -30,7 +30,7 @@
   }
 
   body {
-    /* 시스템 기본 폰트 사용 (가장 빠르고 안정적) */
+    /* 시스템 기본 폰트 (가장 빠르고 안정적) */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     padding: 20px;
     color: var(--text-main);
@@ -131,7 +131,7 @@
   .task-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
   .task-left { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
   
-  /* --- [버그 수정됨] 체크박스 로직 --- */
+  /* 체크박스 로직 */
   .custom-check { 
     width: 18px; height: 18px; 
     background: rgba(255,255,255,0.4); 
@@ -139,13 +139,12 @@
     border-radius: 50%; 
     display: flex; align-items: center; justify-content: center; 
     font-size: 12px; transition: 0.2s;
-    color: transparent; /* 기본: 체크 숨김 */
+    color: transparent; 
   }
   
-  /* 클래스가 custom-check와 done을 동시에 가질 때 스타일 적용 */
   .custom-check.done { 
     background: #333; 
-    color: white; /* 체크 보임 */
+    color: white; 
     border-color: transparent; 
   }
   
@@ -229,6 +228,7 @@
 
 <script>
   let currentCategory = 'work';
+  // 데이터 키를 유지하여 기존 작성 내역 보존
   const STORAGE_KEY = 'notion_pomodoro_final_fix';
   const DATE_KEY = 'notion_pomodoro_date_final';
 
@@ -304,7 +304,6 @@
       const percent = subTotal > 0 ? Math.round((subDone / subTotal) * 100) : 0;
       const percentStr = subTotal > 0 ? `(${percent}%)` : '';
       
-      // task.done이 true이면 done 클래스가 추가됨
       const doneClass = task.done ? 'done' : ''; 
       const doneTitle = task.done ? 'done-title' : '';
       
@@ -351,9 +350,13 @@
     const task = tasks.find(t => t.id === id);
     if(task) { task.done = !task.done; saveData(tasks); }
   }
+
+  // [수정됨] confirm 창 제거 -> 즉시 삭제
   function deleteTask(id) {
-    if(confirm('삭제하시겠습니까?')) { const tasks = getTasks().filter(t => t.id !== id); saveData(tasks); }
+    const tasks = getTasks().filter(t => t.id !== id); 
+    saveData(tasks);
   }
+
   function toggleDetails(btn) {
     const container = btn.closest('.task-header').nextElementSibling;
     container.classList.toggle('show');
